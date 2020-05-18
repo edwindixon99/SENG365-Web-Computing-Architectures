@@ -24,9 +24,24 @@
                     data-target="#filterPetitionModal">
               Filter
             </button>
-
           </form>
+          <div>
+            Sort By
+            <select v-model="sortBy" v-on:click="getPetitions()">
+              <option value="ALPHABETICAL_ASC">Alphabetical A-Z</option>
+              <option value="ALPHABETICAL_DESC">Alphabetical Z-A</option>
+              <option value="SIGNATURES_ASC">Signature count (asc)</option>
+              <option value="SIGNATURES_DESC">Signature count (desc)</option>
+            </select>
 
+          </div>
+
+          <td style="padding:10px" v-for="i in parseInt(petitions.length / 10) + 1">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    v-on:click="getPetitions()">
+              {{i}}
+          </button>
+          </td>
 
         </div>
 
@@ -46,6 +61,8 @@
             <td style="padding:10px" >{{ petition.category }}</td>
             <td style="padding:10px" >{{ petition.authorName }}</td>
             <td style="padding:10px" >{{ petition.signatureCount }}</td>
+              <td><router-link :to="{ name: 'petition', params: { id: petition.petitionId
+}}">View</router-link></td>
           </tr>
         </table>
 
@@ -173,11 +190,11 @@
         categoryId: null,
         closingDate: null,
         petitionId: null,
-        token: null,
+        sortBy: null,
         q: null,
-        startIndex: null,
+        startIndex: 1,
         authorId: null,
-        params:{},
+        params:{"count":10},
         baseurl: "http://localhost:4941/api/v1/petitions"
       }
     },
@@ -190,27 +207,24 @@
         this.params["startIndex"] = this.startIndex;
         this.params["authorId"] = this.authorId;
         this.params["categoryId"] = this.categoryId;
+        this.params["sortBy"] = this.sortBy;
+        this.params["startIndex"] = this.startIndex;
         this.$http.get(this.baseurl, {params:this.params})
           .then((response)=> {
             this.petitions = response.data;
-          }, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
-        this.params = {};
-        this.q = null;
-        this.startIndex = null;
-        this.categoryId = null;
-        this.authorId = null;
-      },
-      getSinglePetition: function(id) {
-        this.$http.get(this.baseurl +"/" + id)
-          .then((response)=> {
-            this.petition = response.data;
-          }, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        })
+        // this.params = {};
+        // this.q = null;
+        // this.startIndex = null;
+        // this.categoryId = null;
+        // this.authorId = null;;
       },
       addPetition: function() {
         let data = {
@@ -219,33 +233,16 @@
           "categoryId": this.categoryId,
           "closingDate": this.closingDate
         }
-          this.$http.post(this.baseurl, data).then((response)=> {
-if (response.status == "401") {
-              this.error = response.status;
-              this.errorFlag = true;
-            }else {
+          this.$http.post(this.baseurl, data, {headers: {"X-Authorization":this.token}}).then((response)=> {
               this.petitionId = response.data.petitionId;
-            }
           }).catch((error) => {
             console.log(error.response.status);
-            if (error.response.status == 401) {
+            if (error.response.status == 401 || error.response.status == 400) {
               alert(error);
             }
             this.error = error;
             this.errorFlag = true;
         });
-      },
-      editPetition: function(id) {
-        if (this.newpetitionname === "") {
-          alert("Please enter an petitionname !");
-        } else {
-          this.$http.put('http://localhost:8080/api/petitions/' + id, {
-            "petitionname": this.newpetitionname
-          });
-          this.newpetitionname = "";
-          this.getpetitions();
-          this.getSinglePetition(id);
-        }
       }
     }
   }

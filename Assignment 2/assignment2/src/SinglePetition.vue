@@ -126,159 +126,6 @@
         </div>
       </div>
     </div>
-
-
-
-    <div v-else>
-      <br id="petitions">
-        <h1>Petitions</h1>
-
-        <div style="padding:70px">
-          <form>
-            <input v-model=q placeholder="Search" />
-            <router-link :to="{ name: 'petitions'}"><button type="button" class="btn btn-secondary" data-toggle="modal">
-              Go
-            </button></router-link>
-
-            <button type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#filterPetitionModal">
-              Filter
-            </button>
-
-          </form>
-
-
-        </div>
-
-
-
-        <br><br/>
-
-        <table>
-          <tr>
-            <td style="padding:10px" > Title </td>
-            <td style="padding:10px" > Category </td>
-            <td style="padding:10px" > Author </td>
-            <td style="padding:10px" > Signature Count </td>
-          </tr>
-            <tr style="padding:10px" v-for="petition in petitions">
-            <td style="padding:10px" >{{ petition.title }}</td>
-            <td style="padding:10px" >{{ petition.category }}</td>
-            <td style="padding:10px" >{{ petition.authorName }}</td>
-            <td style="padding:10px" >{{ petition.signatureCount }}</td>
-            <td style="padding:50px" ><router-link :to="{ name: 'petition', params: { id: petition.petitionId
-}}"><button>View</button></router-link></td>
-          </tr>
-        </table>
-
-
-      <button type="button" class="btn btn-primary" data-toggle="modal"
-              data-target="#addPetitionModal">
-        Add New petition
-      </button>
-
-    </div>
-    <div class="modal fade" id="addPetitionModal" tabindex="-1" role="dialog"
-         aria-labelledby="addpetitionModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addpetitionModalLabel">Add petition</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-
-            <table>
-              <tr>
-                <td style="padding:10px" > Title </td>
-                <td style="padding:10px" > <form><input Title v-model=title placeholder="" />
-                </form> </td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Start Index</td>
-                <td style="padding:10px" ><form><input Title v-model=startIndex placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Category Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=categoryId placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Author Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=authorId placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-              </tr>
-            </table>
-
-
-
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal"
-                    v-on:click="getSinglePetition($route.params.id)">
-              Filter Results
-            </button>
-
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal fade" id="filterPetitionModal" tabindex="-1" role="dialog"
-         aria-labelledby="filterPetitionModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="filterPetitionModalLabel">Filter</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-
-            <table>
-              <tr>
-                <td style="padding:10px" > Search Query  </td>
-                <td style="padding:10px" > <form><input Title v-model=q placeholder="" />
-                </form> </td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Start Index</td>
-                <td style="padding:10px" ><form><input Title v-model=startIndex placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Category Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=categoryId placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Author Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=authorId placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-              </tr>
-            </table>
-
-
-
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal"
-                    v-on:click="getPetitions()">
-              Add
-            </button>
-
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -308,27 +155,6 @@
       this.getPetitions();
     },
     methods: {
-      getPetitions: function() {
-        if (this.q != null) {
-          this.params["q"] = this.q;
-        }
-        if (this.startIndex != null) {
-          this.params["startIndex"] = this.startIndex;
-        }
-        if (this.authorId != null) {
-          this.params["authorId"] = this.authorId;
-        }
-        if (this.categoryId != null) {
-          this.params["categoryId"] = this.categoryId;
-        }
-        this.$http.get(this.baseurl, {params:this.params})
-          .then((response)=> {
-            this.petitions = response.data;
-          }, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
-      },
       getSinglePetition: function(id) {
         this.$http.get(this.baseurl +"/" + id)
           .then((response)=> {
@@ -338,33 +164,12 @@
             this.errorFlag = true;
           });
       },
-      addPetition: function() {
-        let data = {
-          "title": this.title,
-          "description": this.description,
-          "categoryId": this.categoryId,
-          "closingDate": this.closingDate
-        }
-          this.$http.post(this.baseurl, data, {header: {"X-Authorization":this.token}}).then((response)=> {
-            if (response.status == 400) {
-              alert("invalid registration!");
-            } else if (response.status == 401) {
-              this.error = response.status;
-              this.errorFlag = true;
-            }else {
-              this.petitionId = response.data.petitionId;
-            }}, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
-      },
       editPetition: function(id) {
         if (this.newpetitionname === "") {
           alert("Please enter an petitionname !");
         } else {
           this.$http.put('http://localhost:8080/api/petitions/' + id, {
-            "petitionname": this.newpetitionname
-          });
+            "petitionname": this.newpetitionname}, {headers: {"X-Authorization":this.token}});
           this.newpetitionname = "";
           this.getpetitions();
           this.getSinglePetition(id);

@@ -11,28 +11,30 @@
           Logout
         </button>
 
-        <div>{{token}}</div>
-
         <table>
           <tr>
             <td style="padding:10px">User ID </td>
             <td style="padding:10px">Name</td>
-            <td style="padding:10px">City</td>
-            <td style="padding:10px">Country</td>
+            <td v-if="user.city != null" style="padding:10px">City</td>
+            <td v-if="user.country != null" style="padding:10px">Country</td>
+            <td v-if="user.email != null" style="padding:10px">Email</td>
           </tr>
           <tr>
             <td style="padding:10px">{{ $route.params.userId }}</td>
-            <td style="padding:10px">{{ name }}</td>
-            <td style="padding:10px">{{ city }}</td>
-            <td style="padding:10px">{{ country }}</td>
-            <td style="padding:10px">{{ email }}</td>
+            <td style="padding:10px">{{ user.name }}</td>
+            <td v-if="user.city != null"  style="padding:10px">{{ user.city }}</td>
+            <td v-if="user.country != null" style="padding:10px">{{ user.country }}</td>
+            <td v-if="user.email != null"  style="padding:10px">{{ user.email }}</td>
           </tr>
         </table>
 
-        <button type="button" class="btn btn-primary" data-toggle="modal"
-                data-target="#editUserModal">
-          Edit
-        </button>
+        <div v-if="">
+          <button type="button" class="btn btn-primary" data-toggle="modal"
+                  data-target="#editUserModal">
+            Edit
+          </button>
+        </div>
+
 
       </div>
 
@@ -55,8 +57,14 @@
               </div>
               <div>
                 <form>
-                  Password*
-                  <input v-model=password placeholder="password" />
+                  New Password*
+                  <input v-model=password placeholder="********" />
+                </form>
+              </div>
+              <div>
+                <form>
+                  current Password*
+                  <input v-model=currentPassword placeholder="*******" />
                 </form>
               </div>
               <div>
@@ -215,6 +223,7 @@
             } else {
               this.userId = response.data.userId;
               this.token = response.data.token;
+              localStorage.setItem("X-Authorization", response.data.token)
               this.email = null;
               this.password = null;
             }
@@ -224,28 +233,18 @@
         });
       },
       logout: function() {
-        this.$http.post(this.baseurl + 'logout')
+        this.$http.post(this.baseurl + 'logout', {}, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
           .then((response)=> {
-            this.userId = null;
-            this.token = null;
-          }, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
+            localStorage.removeItem("X-Authorization");
+          }).catch((error) => {
+          this.error = error;
+          this.errorFlag = true;
+        });
       },
       getSingleUser: function(id) {
-        let it = null
-        if (this.token == null) {
-          it = this.baseurl + id
-        } else {
-          it = this.baseurl + id, {header: {"X-Authorization":this.token}}
-        }
-        this.$http.get(it)
+        this.$http.get(this.baseurl + id, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
           .then((response)=> {
-            this.name = response.data.name;
-            this.city = response.data.city;
-            this.country = response.data.country;
-            this.email = response.data.email;
+            this.user = response.data;
           }, function(error) {
             this.error = error;
             this.errorFlag = true;
@@ -281,16 +280,43 @@
           this.errorFlag = true;
         });
       },
-      editUser: function(id) {
-        this.$http.put(this.baseurl +  + id, {
-          "name": this.name,
-          "email": this.email,
-          "password": this.password,
-          "city": this.city,
-          "country": this.country
 
+      editUser: function(id) {
+        let data = {};
+        if (this.name != null) {
+          data["name"] = this.name;
+        }
+        if (this.email != null) {
+          data["email"] = this.email;
+        }
+        if (this.password != null) {
+          data["password"] = this.password;
+        }
+        if (this.currentPassword != null) {
+          data["currentPassword"] = this.currentPassword;
+        }
+        if (this.city != null) {
+          data["city"] =this.city;
+        }
+        if (this.country != null) {
+          data["country"] = this.country;
+        }
+
+        this.$http.patch(this.baseurl +  + id, data,
+          {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}})
+          .then((response) => {
+            this.email = null;
+            this.password = null;
+            this.currentPassword = null;
+            this.name = null;
+            this.city = null;
+            this.country = null;
+            this.getSingleUser(id);
+
+        }).catch((error) => {
+          this.error = error;
+          this.errorFlag = true;
         });
-        this.newUsername = "";
       }
     }
   }

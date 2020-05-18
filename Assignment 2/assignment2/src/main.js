@@ -3,6 +3,7 @@ import App from './App.vue'
 import Home from './Home.vue';
 import Users from './Users.vue';
 import Petitions from './Petitions.vue';
+import SinglePetition from './SinglePetition.vue';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 Vue.use(VueAxios, axios);
@@ -32,13 +33,13 @@ const routes = [
     path: "/petitions",
     name: "petitions",
     component: Petitions
-  }
+  },
 
-  // {
-  //   path: "/petitions/:id",
-  //   name: "petition",
-  //   component: SinglePetition
-  // }
+  {
+    path: "/petitions/:id",
+    name: "petition",
+    component: SinglePetition
+  }
 ];
 
 const router = new VueRouter({
