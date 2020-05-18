@@ -50,9 +50,6 @@
 
         </table>
 
-
-        <div v-html="users"></div>
-
         <div>
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#deletepetitionModal">
@@ -66,7 +63,7 @@
         </div>
         <div>
 
-          <button type="button" class="btn btn-primary" data-toggle="modal">
+          <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="signPetition($route.params.id)">
             Sign
           </button>
 
@@ -88,7 +85,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal"
-                      v-on:click="deletepetition($route.params.petitionId)">
+                      v-on:click="deletePetition($route.params.id)">
                 Delete petition
               </button>
 
@@ -111,10 +108,32 @@
               </button>
             </div>
             <div class="modal-body">
-              Enter new petitionname
-              <form>
-                <input v-model=title placeholder="" />
-              </form>
+              <table>
+                <tr style="padding:10px">
+                  <td style="padding:10px">Enter new Title</td>
+                  <td style="padding:10px" ><form><input v-model=title placeholder="" /></form></td>
+                </tr>
+
+                <tr style="padding:10px">
+                  <td style="padding:10px">Enter new Description</td>
+                  <td style="padding:10px" ><form ><input style="padding:10px" v-model=description placeholder="" /></form></td>
+                </tr>
+
+                <tr style="padding:10px">
+                  <td style="padding:10px">Choose new Category</td>
+<!--                  <td style="padding:10px" ><select v-model="categoryId">-->
+<!--                    <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>-->
+<!--                  </select></td>-->
+                </tr>
+
+                <tr style="padding:10px">
+                  <td style="padding:10px">Enter new Closing Date</td>
+                  <td style="padding:10px" ><form ><input style="padding:10px" v-model=closingDate placeholder="" /></form></td>
+                </tr>
+
+              </table>
+
+
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal"
@@ -130,6 +149,45 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="signaturesModal" tabindex="-1" role="dialog"
+         aria-labelledby="signaturesModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signaturesModalLabel">Petition Signatories</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <table>
+
+              <tr>
+                <td style="padding:10px">Title</td>
+                <td style="padding:10px">Tile</td>
+              </tr>
+
+              <tr v-for="signator in signatories">
+                <td style="padding:10px">{{signator}}</td>
+                <td style="padding:10px"></td>
+              </tr>
+              <br /><br />
+
+            </table>
+          </div>
+          <div class="modal-footer">
+
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
   </div>
 </template>
 
@@ -140,44 +198,112 @@
         error: "",
         errorFlag: false,
         petitions: [],
+        signatories: [],
         petition: null,
-        title: null,
-        description: null,
+        title: "",
+        description: "",
         categoryId: null,
-        closingDate: null,
+        closingDate: "",
         petitionId: null,
-        token: null,
-        q: null,
-        startIndex: null,
         authorId: null,
-        params:{},
-        baseurl: "http://localhost:4941/api/v1/petitions"
+        baseurl: "http://localhost:4941/api/v1/petitions/"
       }
     },
     mounted: function() {
       this.getSinglePetition(this.$route.params.id);
-      this.getPetitions();
     },
     methods: {
+
+      getSignatories: function(id) {
+        this.$http.get(this.baseurl + id + "/signatures")
+          .then((response)=> {
+            this.signatories = response.data;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
       getSinglePetition: function(id) {
-        this.$http.get(this.baseurl +"/" + id)
+        this.getSignatories(id);
+        this.$http.get(this.baseurl + id)
           .then((response)=> {
             this.petition = response.data;
-          }, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
       },
+
       editPetition: function(id) {
-        if (this.newpetitionname === "") {
-          alert("Please enter an petitionname !");
-        } else {
-          this.$http.put('http://localhost:8080/api/petitions/' + id, {
-            "petitionname": this.newpetitionname}, {headers: {"X-Authorization":this.token}});
-          this.newpetitionname = "";
-          this.getpetitions();
-          this.getSinglePetition(id);
+        let data = {};
+        console.log(this.categoryId);
+        if (this.title != "") {
+          data["title"] = this.title;
         }
+        if (this.description != "") {
+          data["description"] = this.description;
+        }
+        if (this.categoryId != null) {
+          data["categoryId"] = this.categoryId;
+        }
+        if (this.closingDate != "") {
+          data["closingDate"] = this.closingDate;
+        }
+        this.$http.patch(this.baseurl + id, data, {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+          this.getSinglePetition(id);
+        }).catch((error) => {
+          if (error.response.status >= 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+        this.title = "";
+        this.description = "";
+        this.categoryId = null;
+        this.closingDate  = "";
+      },
+
+      deletePetition: function(id) {
+        this.$http.delete(this.baseurl + id + "/signatures" , {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+          this.getSinglePetition(id);
+        }).catch((error) => {
+          if (error.response.status >= 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
+
+      signPetition: function(id) {
+        this.$http.post(this.baseurl + id + "/signatures", {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+          this.getSinglePetition(id);}).catch((error) => {
+          if (error.response.status >= 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
+
+      unsignPetition: function(id) {
+        this.$http.delete(this.baseurl + id + "/signatures", {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+          this.getSinglePetition(id);}).catch((error) => {
+          if (error.response.status >= 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
       }
     }
   }

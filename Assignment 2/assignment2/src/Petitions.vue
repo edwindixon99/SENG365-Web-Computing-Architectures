@@ -105,7 +105,9 @@
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Category Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=categoryId placeholder="" /></form></td>
+                <td style="padding: 10px" > <select v-model="categoryId">
+                  <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
+                </select></td>
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Closing Date</td>
@@ -197,7 +199,7 @@
         title: null,
         description: null,
         categoryId: null,
-        closingDate: null,
+        closingDate: "",
         petitionId: null,
         sortBy: null,
         q: null,
@@ -267,9 +269,11 @@
           "title": this.title,
           "description": this.description,
           "categoryId": this.categoryId,
-          "closingDate": this.closingDate
+        };
+        if (this.closingDate != "") {
+          data["closingDate"] = this.closingDate;
         }
-          this.$http.post(this.baseurl, data, {headers: {"X-Authorization":this.token}}).then((response)=> {
+          this.$http.post(this.baseurl, data, {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
               this.petitionId = response.data.petitionId;
           }).catch((error) => {
             console.log(error.response.status);
@@ -279,6 +283,10 @@
             this.error = error;
             this.errorFlag = true;
         });
+        this.title = null;
+        this.description = null;
+        this.categoryId = null;
+        this.closingDate  = "";
       }
     }
   }

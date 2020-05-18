@@ -15,23 +15,23 @@
           <tr>
             <td style="padding:10px">User ID </td>
             <td style="padding:10px">Name</td>
-            <td v-if="user.city != ''" style="padding:10px">City</td>
-            <td v-if="user.country != ''" style="padding:10px">Country</td>
-            <td v-if="user.email != ''" style="padding:10px">Email</td>
+            <td v-if="user.city != null" style="padding:10px">City</td>
+            <td v-if="user.country != null" style="padding:10px">Country</td>
+            <td v-if="user.email != null" style="padding:10px">Email</td>
           </tr>
           <tr>
             <td style="padding:10px">{{ $route.params.userId }}</td>
             <td style="padding:10px">{{ user.name }}</td>
-            <td v-if="user.city != ''" style="padding:10px">{{ user.city }}</td>
-            <td v-if="user.country != ''" style="padding:10px">{{ user.country }}</td>
-            <td v-if="user.email != ''"  style="padding:10px">{{ user.email }}</td>
+            <td v-if="user.city != null" style="padding:10px">{{ user.city }}</td>
+            <td v-if="user.country != null" style="padding:10px">{{ user.country }}</td>
+            <td v-if="user.email != null"  style="padding:10px">{{ user.email }}</td>
           </tr>
         </table>
 
         <div v-if="">
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#editUserModal">
-            Edit
+            Edit User Details
           </button>
         </div>
 
@@ -51,25 +51,25 @@
             <div class="modal-body">
               <div>
                 <form>
-                  Email*
+                  Email
                   <input v-model=email placeholder="email" />
                 </form>
               </div>
               <div>
                 <form>
-                  New Password*
+                  New Password
                   <input v-model=password placeholder="********" />
                 </form>
               </div>
               <div>
                 <form>
-                  current Password*
+                  current Password
                   <input v-model=currentPassword placeholder="*******" />
                 </form>
               </div>
               <div>
                 <form>
-                  Name*
+                  Name
                   <input v-model=name placeholder="Enter name" />
                 </form>
               </div>
@@ -85,7 +85,7 @@
                   <input v-model=country placeholder="Enter Country" />
                 </form>
               </div>
-              * required
+              * current password is required if changing password
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal"
@@ -105,14 +105,13 @@
 
     <div v-else>
       <div id="login">
+
         <button type="button" class="btn btn-primary" data-toggle="modal"
                 data-target="#addUserModal">
           Register
         </button>
 
         <div>
-          {{this.token}}
-          {{this.token}}
           <form>
             Email
             <input v-model=email placeholder="email" />
@@ -147,19 +146,19 @@
           <div class="modal-body">
             <div>
               <form>
-                Email
+                Email*
                 <input v-model=email placeholder="email" />
               </form>
             </div>
             <div>
               <form>
-                Password
+                Password*
                 <input v-model=password placeholder="password" />
               </form>
             </div>
             <div>
               <form>
-                Name
+                Name*
                 <input v-model=name placeholder="Enter name" />
               </form>
             </div>
@@ -207,7 +206,6 @@
         currentPassword: "",
         city: "",
         country: "",
-        token: "",
         baseurl: "http://localhost:4941/api/v1/users/"
       }
     },
@@ -222,11 +220,11 @@
               alert("invalid registration!");
             } else {
               this.userId = response.data.userId;
-              this.token = response.data.token;
               localStorage.setItem("X-Authorization", response.data.token);
               this.email = "";
               this.password = "";
               console.log(response.data.userId);
+              this.getSingleUser(response.data.userId)
               this.$router.push({name:"user",  params:{ "userId":response.data.userId}});
             }
           }).catch((error) => {
@@ -242,6 +240,7 @@
         this.$http.post(this.baseurl + 'logout', {}, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
           .then((response)=> {
             localStorage.removeItem("X-Authorization");
+            this.$router.push({name:"login"});
           }).catch((error) => {
           console.log(error.response.statusText);
           if (error.response.status == 401 || error.response.status == 400) {
@@ -331,7 +330,6 @@
           this.errorFlag = true;
         });
       },
-
       resetValues : function() {
         this.email = "";
         this.password = "";
