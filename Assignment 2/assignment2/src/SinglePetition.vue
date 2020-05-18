@@ -32,8 +32,8 @@
           </tr>
           <br /><br />
           <tr>
-            <td style="padding:10px"> Number of signatures </td>
-            <td style="padding:10px">{{petition.signatureCount}}</td>
+            <td style="padding:10px"> Category </td>
+            <td style="padding:10px">{{petition.category}}</td>
           </tr>
           <br /><br />
           <tr>
@@ -49,7 +49,11 @@
 
 
         </table>
-        <div v-if="token != null">
+
+
+        <div v-html="users"></div>
+
+        <div>
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#deletepetitionModal">
             Delete
@@ -60,7 +64,7 @@
             Edit
           </button>
         </div>
-        <div v-else-if="token == null">
+        <div>
 
           <button type="button" class="btn btn-primary" data-toggle="modal">
             Sign

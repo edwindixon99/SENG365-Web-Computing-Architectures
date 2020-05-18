@@ -15,16 +15,16 @@
           <tr>
             <td style="padding:10px">User ID </td>
             <td style="padding:10px">Name</td>
-            <td v-if="user.city != null" style="padding:10px">City</td>
-            <td v-if="user.country != null" style="padding:10px">Country</td>
-            <td v-if="user.email != null" style="padding:10px">Email</td>
+            <td v-if="user.city != ''" style="padding:10px">City</td>
+            <td v-if="user.country != ''" style="padding:10px">Country</td>
+            <td v-if="user.email != ''" style="padding:10px">Email</td>
           </tr>
           <tr>
             <td style="padding:10px">{{ $route.params.userId }}</td>
             <td style="padding:10px">{{ user.name }}</td>
-            <td v-if="user.city != null"  style="padding:10px">{{ user.city }}</td>
-            <td v-if="user.country != null" style="padding:10px">{{ user.country }}</td>
-            <td v-if="user.email != null"  style="padding:10px">{{ user.email }}</td>
+            <td v-if="user.city != ''" style="padding:10px">{{ user.city }}</td>
+            <td v-if="user.country != ''" style="padding:10px">{{ user.country }}</td>
+            <td v-if="user.email != ''"  style="padding:10px">{{ user.email }}</td>
           </tr>
         </table>
 
@@ -93,7 +93,7 @@
                 Ok
               </button>
 
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetValues()">
                 Cancel
               </button>
             </div>
@@ -147,19 +147,19 @@
           <div class="modal-body">
             <div>
               <form>
-                Email*
+                Email
                 <input v-model=email placeholder="email" />
               </form>
             </div>
             <div>
               <form>
-                Password*
+                Password
                 <input v-model=password placeholder="password" />
               </form>
             </div>
             <div>
               <form>
-                Name*
+                Name
                 <input v-model=name placeholder="Enter name" />
               </form>
             </div>
@@ -184,7 +184,7 @@
               Register
             </button>
 
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetValues()">
               Cancel
             </button>
           </div>
@@ -200,14 +200,14 @@
       return{
         error: "",
         errorFlag: false,
-        user: null,
-        name: null,
-        email: null,
-        password: null,
-        currentPassword: null,
-        city: null,
-        country: null,
-        token: null,
+        user: "",
+        name: "",
+        email: "",
+        password: "",
+        currentPassword: "",
+        city: "",
+        country: "",
+        token: "",
         baseurl: "http://localhost:4941/api/v1/users/"
       }
     },
@@ -223,11 +223,17 @@
             } else {
               this.userId = response.data.userId;
               this.token = response.data.token;
-              localStorage.setItem("X-Authorization", response.data.token)
-              this.email = null;
-              this.password = null;
+              localStorage.setItem("X-Authorization", response.data.token);
+              this.email = "";
+              this.password = "";
+              console.log(response.data.userId);
+              this.$router.push({name:"user",  params:{ "userId":response.data.userId}});
             }
           }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error.response.statusText);
+          }
           this.error = error;
           this.errorFlag = true;
         });
@@ -237,6 +243,10 @@
           .then((response)=> {
             localStorage.removeItem("X-Authorization");
           }).catch((error) => {
+          console.log(error.response.statusText);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error.response.statusText);
+          }
           this.error = error;
           this.errorFlag = true;
         });
@@ -245,21 +255,25 @@
         this.$http.get(this.baseurl + id, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
           .then((response)=> {
             this.user = response.data;
-          }, function(error) {
-            this.error = error;
-            this.errorFlag = true;
-          });
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
       },
       addUser: function() {
           let data = {
           "name": this.name,
           "email": this.email,
           "password": this.password
-         }
-          if (this.country != null) {
+         };
+          if (this.country != "") {
             data["country"] = this.country;
           }
-        if (this.city != null) {
+        if (this.city != "") {
           data["city"] = this.city;
         }
           this.$http.post(this.baseurl + 'register', data).then((response) => {
@@ -268,55 +282,63 @@
           } else {
             this.userId = response.data.userId;
             this.login();
-            this.email = null;
-            this.password = null;
-            this.name = null;
-            this.city = null;
-            this.country = null;
+            this.resetValues();
           }
 
         }).catch((error) => {
-          this.error = error;
-          this.errorFlag = true;
-        });
+            console.log(error.response.status);
+            if (error.response.status == 401 || error.response.status == 400) {
+              alert(error.response.statusText);
+            }
+            this.error = error;
+            this.errorFlag = true;
+          });
       },
 
       editUser: function(id) {
         let data = {};
-        if (this.name != null) {
+        if (this.name != "") {
           data["name"] = this.name;
         }
-        if (this.email != null) {
+        if (this.email != "") {
           data["email"] = this.email;
         }
-        if (this.password != null) {
+        if (this.password != "") {
           data["password"] = this.password;
         }
-        if (this.currentPassword != null) {
+        if (this.currentPassword != "") {
           data["currentPassword"] = this.currentPassword;
         }
-        if (this.city != null) {
+        if (this.city != "") {
           data["city"] =this.city;
         }
-        if (this.country != null) {
+        if (this.country != "") {
           data["country"] = this.country;
         }
 
         this.$http.patch(this.baseurl +  + id, data,
           {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}})
           .then((response) => {
-            this.email = null;
-            this.password = null;
-            this.currentPassword = null;
-            this.name = null;
-            this.city = null;
-            this.country = null;
+            this.resetValues();
             this.getSingleUser(id);
 
         }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error.response.statusText);
+          }
           this.error = error;
           this.errorFlag = true;
         });
+      },
+
+      resetValues : function() {
+        this.email = "";
+        this.password = "";
+        this.currentPassword = "";
+        this.name = "";
+        this.city = "";
+        this.country = "";
       }
     }
   }

@@ -34,6 +34,14 @@
               <option value="SIGNATURES_DESC">Signature count (desc)</option>
             </select>
 
+
+            Filter By Category
+            <select v-model="categoryId" v-on:click="getPetitions()">
+              <option value="''">None</option>
+              <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
+            </select>
+
+
           </div>
 
           <td style="padding:10px" v-for="i in parseInt(petitions.length / 10) + 1">
@@ -143,12 +151,12 @@
                 </form> </td>
               </tr>
               <tr style="padding:10px">
-                <td style="padding:10px" >Start Index</td>
-                <td style="padding:10px" ><form><input Title v-model=startIndex placeholder="" /></form></td>
-              </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Category Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=categoryId placeholder="" /></form></td>
+                <td style="padding:10px" >Category</td>
+                <td style="padding: 10px" >
+                  <select v-model="categoryId" v-on:click="getPetitions()">
+                    <option value="''"  >None</option>
+                    <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
+                  </select></td>
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Author Id</td>
@@ -184,6 +192,7 @@
         error: "",
         errorFlag: false,
         petitions: [],
+        categories: [],
         petition: null,
         title: null,
         description: null,
@@ -192,7 +201,7 @@
         petitionId: null,
         sortBy: null,
         q: null,
-        startIndex: 1,
+        startIndex: 0,
         authorId: null,
         params:{"count":10},
         baseurl: "http://localhost:4941/api/v1/petitions"
@@ -202,11 +211,38 @@
       this.getPetitions();
     },
     methods: {
+      getCategories: function() {
+        this.$http.get(this.baseurl + "/categories")
+          .then((response)=> {
+            this.categories = response.data;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        })
+      },
+
+
+
       getPetitions: function() {
+        this.getCategories();
+        if (this.q == "") {
+          this.q = null;
+        }
+        if (this.authorId == "") {
+          this.authorId = null;
+        }
+        if (this.categoryId == "''") {
+          delete this.params["categoryId"];
+        } else{
+          this.params["categoryId"] = this.categoryId;
+        }
         this.params["q"] = this.q;
         this.params["startIndex"] = this.startIndex;
         this.params["authorId"] = this.authorId;
-        this.params["categoryId"] = this.categoryId;
         this.params["sortBy"] = this.sortBy;
         this.params["startIndex"] = this.startIndex;
         this.$http.get(this.baseurl, {params:this.params})
