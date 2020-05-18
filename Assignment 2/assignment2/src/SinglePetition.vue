@@ -4,21 +4,141 @@
       {{ error }}
     </div>
 
+    <div v-if="$route.params.id">
+      <div id="petition">
+        <router-link :to="{ name: 'petitions'}">Back to Petitions</router-link>
+
+        <br /><br />
+
+        <table>
+          <tr>
+            <td style="padding:10px">Title</td>
+            <td style="padding:10px">{{petition.title}}</td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"> Description </td>
+            <td style="padding:10px"> {{petition.description}} </td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"> Number of signatures </td>
+            <td style="padding:10px">{{petition.signatureCount}}</td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"> Number of signatures </td>
+            <td style="padding:10px">{{petition.signatureCount}}</td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"> Number of signatures </td>
+            <td style="padding:10px">{{petition.signatureCount}}</td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"> Created Date </td>
+            <td style="padding:10px">{{petition.createdDate}}</td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"> Closing Date </td>
+            <td style="padding:10px">{{petition.closingDate}}</td>
+          </tr>
+          <br /><br />
+
+
+        </table>
+        <div v-if="token != null">
+          <button type="button" class="btn btn-primary" data-toggle="modal"
+                  data-target="#deletepetitionModal">
+            Delete
+          </button>
+
+          <button type="button" class="btn btn-primary" data-toggle="modal"
+                  data-target="#editpetitionModal">
+            Edit
+          </button>
+        </div>
+        <div v-else-if="token == null">
+
+          <button type="button" class="btn btn-primary" data-toggle="modal">
+            Sign
+          </button>
+
+
+        </div>
+      </div>
+      <div class="modal fade" id="deletepetitionModal" tabindex="-1" role="dialog"
+           aria-labelledby="deletepetitionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deletepetitionModalLabel">Delete petition</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Are you sure that you want to delete this petition?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal"
+                      v-on:click="deletepetition($route.params.petitionId)">
+                Delete petition
+              </button>
+
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="editpetitionModal" tabindex="-1" role="dialog"
+           aria-labelledby="editpetitionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editpetitionModalLabel">Edit petition</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Enter new petitionname
+              <form>
+                <input v-model=title placeholder="" />
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal"
+                      v-on:click="editPetition($route.params.id)">
+                Ok
+              </button>
+
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
 
 
-
-    <div>
+    <div v-else>
       <br id="petitions">
         <h1>Petitions</h1>
 
         <div style="padding:70px">
           <form>
             <input v-model=q placeholder="Search" />
-            <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                    v-on:click="getPetitions()">
+            <router-link :to="{ name: 'petitions'}"><button type="button" class="btn btn-secondary" data-toggle="modal">
               Go
-            </button>
+            </button></router-link>
 
             <button type="button" class="btn btn-primary" data-toggle="modal"
                     data-target="#filterPetitionModal">
@@ -46,6 +166,8 @@
             <td style="padding:10px" >{{ petition.category }}</td>
             <td style="padding:10px" >{{ petition.authorName }}</td>
             <td style="padding:10px" >{{ petition.signatureCount }}</td>
+            <td style="padding:50px" ><router-link :to="{ name: 'petition', params: { id: petition.petitionId
+}}"><button>View</button></router-link></td>
           </tr>
         </table>
 
@@ -75,16 +197,16 @@
                 </form> </td>
               </tr>
               <tr style="padding:10px">
-                <td style="padding:10px" >Description</td>
-                <td style="padding:10px" ><form><input Title v-model=description placeholder="" /></form></td>
+                <td style="padding:10px" >Start Index</td>
+                <td style="padding:10px" ><form><input Title v-model=startIndex placeholder="" /></form></td>
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Category Id</td>
                 <td style="padding: 10px" > <form><input Title v-model=categoryId placeholder="" /></form></td>
               </tr>
               <tr style="padding:10px">
-                <td style="padding:10px" >Closing Date</td>
-                <td style="padding: 10px" > <form><input Title v-model=closingDate placeholder="" /></form></td>
+                <td style="padding:10px" >Author Id</td>
+                <td style="padding: 10px" > <form><input Title v-model=authorId placeholder="" /></form></td>
               </tr>
               <tr style="padding:10px">
               </tr>
@@ -95,8 +217,8 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-dismiss="modal"
-                    v-on:click="addPetition()">
-              Add
+                    v-on:click="getSinglePetition($route.params.id)">
+              Filter Results
             </button>
 
             <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -147,7 +269,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-dismiss="modal"
                     v-on:click="getPetitions()">
-              Search
+              Add
             </button>
 
             <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -182,14 +304,23 @@
       }
     },
     mounted: function() {
+      this.getSinglePetition(this.$route.params.id);
       this.getPetitions();
     },
     methods: {
       getPetitions: function() {
-        this.params["q"] = this.q;
-        this.params["startIndex"] = this.startIndex;
-        this.params["authorId"] = this.authorId;
-        this.params["categoryId"] = this.categoryId;
+        if (this.q != null) {
+          this.params["q"] = this.q;
+        }
+        if (this.startIndex != null) {
+          this.params["startIndex"] = this.startIndex;
+        }
+        if (this.authorId != null) {
+          this.params["authorId"] = this.authorId;
+        }
+        if (this.categoryId != null) {
+          this.params["categoryId"] = this.categoryId;
+        }
         this.$http.get(this.baseurl, {params:this.params})
           .then((response)=> {
             this.petitions = response.data;
@@ -197,11 +328,6 @@
             this.error = error;
             this.errorFlag = true;
           });
-        this.params = {};
-        this.q = null;
-        this.startIndex = null;
-        this.categoryId = null;
-        this.authorId = null;
       },
       getSinglePetition: function(id) {
         this.$http.get(this.baseurl +"/" + id)
@@ -219,21 +345,18 @@
           "categoryId": this.categoryId,
           "closingDate": this.closingDate
         }
-          this.$http.post(this.baseurl, data).then((response)=> {
-if (response.status == "401") {
+          this.$http.post(this.baseurl, data, {header: {"X-Authorization":this.token}}).then((response)=> {
+            if (response.status == 400) {
+              alert("invalid registration!");
+            } else if (response.status == 401) {
               this.error = response.status;
               this.errorFlag = true;
             }else {
               this.petitionId = response.data.petitionId;
-            }
-          }).catch((error) => {
-            console.log(error.response.status);
-            if (error.response.status == 401) {
-              alert(error);
-            }
+            }}, function(error) {
             this.error = error;
             this.errorFlag = true;
-        });
+          });
       },
       editPetition: function(id) {
         if (this.newpetitionname === "") {

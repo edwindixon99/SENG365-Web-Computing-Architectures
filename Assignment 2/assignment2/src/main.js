@@ -32,13 +32,13 @@ const routes = [
     path: "/petitions",
     name: "petitions",
     component: Petitions
-  },
-
-  {
-    path: "/petitions/:id",
-    name: "petition",
-    component: Petitions
   }
+
+  // {
+  //   path: "/petitions/:id",
+  //   name: "petition",
+  //   component: SinglePetition
+  // }
 ];
 
 const router = new VueRouter({
