@@ -210,7 +210,7 @@
       }
     },
     mounted: function() {
-      this.getPetitions();
+      this.getPetitions(this.params);
     },
     methods: {
       getCategories: function() {
@@ -229,7 +229,8 @@
 
 
 
-      getPetitions: function() {
+      getPetitions: function(params) {
+        console.log(this.params);
         this.getCategories();
         if (this.q == "") {
           this.q = null;
@@ -244,9 +245,10 @@
         }
         this.params["q"] = this.q;
         this.params["startIndex"] = this.startIndex;
-        this.params["authorId"] = this.authorId;
+        // this.params["authorId"] = this.authorId;
         this.params["sortBy"] = this.sortBy;
         this.params["startIndex"] = this.startIndex;
+        this.params["count"] = 10;
         this.$http.get(this.baseurl, {params:this.params})
           .then((response)=> {
             this.petitions = response.data;

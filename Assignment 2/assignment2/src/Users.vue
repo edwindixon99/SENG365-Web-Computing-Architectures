@@ -11,6 +11,8 @@
           Logout
         </button>
 
+        <tr style="padding:10px"><router-link :to="{ name: 'petitions', params:{'authorId':$route.params.userId}}">View My Petitions</router-link></tr>
+
         <table>
           <tr>
             <td style="padding:10px">User ID </td>
