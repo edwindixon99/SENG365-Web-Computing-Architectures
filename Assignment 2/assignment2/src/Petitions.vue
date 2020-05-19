@@ -10,7 +10,10 @@
 
     <div>
       <br id="petitions">
+      <p>{{authorId}}</p>
         <h1>Petitions</h1>
+
+      <h1>{{authorId}}</h1>
 
         <div style="padding:70px">
           <form>
@@ -36,21 +39,19 @@
 
 
             Filter By Category
-            <select v-model="categoryId" v-on:click="getPetitions()">
+            <select v-model="categoryId" v-on:click="startIndex=0; getPetitions();">
               <option value="''">None</option>
               <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
             </select>
 
 
           </div>
-
-          <td style="padding:10px" v-for="i in parseInt(petitions.length / 10) + 1">
+          <td style="padding:10px" v-for="i in parseInt(petitionLength / 10) + 1">
             <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                    v-on:click="getPetitions()">
+                    v-on:click="startIndex = (i-1)*10; getPetitions(params);">
               {{i}}
           </button>
           </td>
-
         </div>
 
 
@@ -155,7 +156,7 @@
               <tr style="padding:10px">
                 <td style="padding:10px" >Category</td>
                 <td style="padding: 10px" >
-                  <select v-model="categoryId" v-on:click="getPetitions()">
+                  <select v-model="categoryId">
                     <option value="''"  >None</option>
                     <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
                   </select></td>
@@ -194,17 +195,18 @@
         error: "",
         errorFlag: false,
         petitions: [],
+        petitionLength: 0,
         categories: [],
         petition: null,
         title: null,
         description: null,
         categoryId: null,
         closingDate: "",
+        authorId: null,
         petitionId: null,
         sortBy: null,
         q: null,
         startIndex: 0,
-        authorId: null,
         params:{"count":10},
         baseurl: "http://localhost:4941/api/v1/petitions"
       }
@@ -226,11 +228,8 @@
           this.errorFlag = true;
         })
       },
-
-
-
       getPetitions: function(params) {
-        console.log(this.params);
+        console.log(this.authorId);
         this.getCategories();
         if (this.q == "") {
           this.q = null;
@@ -247,25 +246,59 @@
         this.params["startIndex"] = this.startIndex;
         // this.params["authorId"] = this.authorId;
         this.params["sortBy"] = this.sortBy;
-        this.params["startIndex"] = this.startIndex;
         this.params["count"] = 10;
         this.$http.get(this.baseurl, {params:this.params})
           .then((response)=> {
             this.petitions = response.data;
+            this.getLengthPetitions();
+            console.log(this.petitions.length);
+            console.log(this.petitionLength);
+            console.log(this.startIndex);
           }).catch((error) => {
           console.log(error.response.status);
+
           if (error.response.status == 400) {
             alert(error);
           }
           this.error = error;
           this.errorFlag = true;
         })
-        // this.params = {};
-        // this.q = null;
-        // this.startIndex = null;
-        // this.categoryId = null;
-        // this.authorId = null;;
       },
+      getLengthPetitions: function() {
+        let newparam = this.params;
+        delete newparam["count"];
+        delete newparam["startIndex"];
+        this.$http.get(this.baseurl, {params:newparam})
+          .then((response)=> {
+            this.petitionLength = response.data.length;
+            console.log(this.petitions.length);
+            console.log(this.petitionLength);
+            console.log(this.startIndex);
+          }).catch((error) => {
+          console.log(error.response.status);
+
+          if (error.response.status == 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        })
+      },
+
+      // getPaginatedPetitions: function() {
+      //   let pageParams = this.params;
+      //   pageParams["startIndex"] = this.startIndex;
+      //   this.$http.get(this.baseurl, {params:pageParams})
+      //     .then((response)=> {
+      //       this.paginatedPetitions = response.data;
+      //     }).catch((error) => {
+      //     if (error.response.status == 400) {
+      //       alert(error);
+      //     }
+      //     this.error = error;
+      //     this.errorFlag = true;
+      //   })
+      // },
       addPetition: function() {
         let data = {
           "title": this.title,
@@ -289,6 +322,7 @@
         this.description = null;
         this.categoryId = null;
         this.closingDate  = "";
+        this.getPetitions();
       }
     }
   }

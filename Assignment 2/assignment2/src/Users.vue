@@ -13,8 +13,9 @@
 
         <tr style="padding:10px"><router-link :to="{ name: 'petitions', params:{'authorId':$route.params.userId}}">View My Petitions</router-link></tr>
 
-        <table>
+        <table v-bind="$props">
           <tr>
+            <td style="padding:10px"></td>
             <td style="padding:10px">User ID </td>
             <td style="padding:10px">Name</td>
             <td v-if="user.city != null" style="padding:10px">City</td>
@@ -22,6 +23,7 @@
             <td v-if="user.email != null" style="padding:10px">Email</td>
           </tr>
           <tr>
+            <td style="padding:10px"> <img src="./assets/logo.png" width="100" height="100"></td>
             <td style="padding:10px">{{ $route.params.userId }}</td>
             <td style="padding:10px">{{ user.name }}</td>
             <td v-if="user.city != null" style="padding:10px">{{ user.city }}</td>
@@ -60,13 +62,13 @@
               <div>
                 <form>
                   New Password
-                  <input v-model=password placeholder="********" />
+                  <input v-model=password type="password" placeholder="********" />
                 </form>
               </div>
               <div>
                 <form>
                   current Password
-                  <input v-model=currentPassword placeholder="*******" />
+                  <input v-model=currentPassword type="password" placeholder="*******" />
                 </form>
               </div>
               <div>
@@ -86,6 +88,10 @@
                   Country
                   <input v-model=country placeholder="Enter Country" />
                 </form>
+              </div>
+              <div>
+                  <input type="file">
+                  <input type="submit">
               </div>
               * current password is required if changing password
             </div>
@@ -122,7 +128,7 @@
         <div>
           <form>
             Password:
-            <input v-model=password placeholder="***********" />
+            <input v-model=password type="password" placeholder="***********" />
           </form>
         </div>
         <button type="button" class="btn btn-primary" data-dismiss="modal"
@@ -155,7 +161,7 @@
             <div>
               <form>
                 Password*
-                <input v-model=password placeholder="password" />
+                <input v-model=password type="password" placeholder="password" />
               </form>
             </div>
             <div>
@@ -175,6 +181,10 @@
                 Country
                 <input v-model=country placeholder="Enter Country" />
               </form>
+            </div>
+            <div>
+                <input v-bind"photo" type="file" id="img">
+                <input type="submit">
             </div>
             * required
           </div>
@@ -208,6 +218,7 @@
         currentPassword: "",
         city: "",
         country: "",
+        photo: null,
         baseurl: "http://localhost:4941/api/v1/users/"
       }
     },
@@ -216,27 +227,31 @@
     },
     methods: {
       login: function() {
-        this.$http.post(this.baseurl + 'login', {"email": this.email, "password": this.password})
-          .then((response)=> {
-            if (response.status == 400) {
-              alert("invalid registration!");
-            } else {
-              this.userId = response.data.userId;
-              localStorage.setItem("X-Authorization", response.data.token);
-              this.email = "";
-              this.password = "";
-              console.log(response.data.userId);
-              this.getSingleUser(response.data.userId)
-              this.$router.push({name:"user",  params:{ "userId":response.data.userId}});
+        if (localStorage.getItem("X-Authorization") == null) {
+          this.$http.post(this.baseurl + 'login', {"email": this.email, "password": this.password})
+            .then((response) => {
+              if (response.status == 400) {
+                alert("invalid registration!");
+              } else {
+                this.userId = response.data.userId;
+                localStorage.setItem("X-Authorization", response.data.token);
+                this.email = "";
+                this.password = "";
+                console.log(response.data.userId);
+                this.getSingleUser(response.data.userId)
+                this.$router.push({name: "user", params: {"userId": response.data.userId}});
+              }
+            }).catch((error) => {
+            console.log(error.response.status);
+            if (error.response.status == 401 || error.response.status == 400) {
+              alert(error.response.statusText);
             }
-          }).catch((error) => {
-          console.log(error.response.status);
-          if (error.response.status == 401 || error.response.status == 400) {
-            alert(error.response.statusText);
-          }
-          this.error = error;
-          this.errorFlag = true;
-        });
+            this.error = error;
+            this.errorFlag = true;
+          });
+        } else {
+          alert("Please Log out before logging into another account");
+        }
       },
       logout: function() {
         this.$http.post(this.baseurl + 'logout', {}, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
@@ -332,6 +347,34 @@
           this.errorFlag = true;
         });
       },
+
+      getUserPhoto: function(id) {
+        this.$http.get(this.baseurl + id + '/photos', {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
+          .then((response)=> {
+            this.user = response.data;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status >= 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
+
+      postUserPhoto: function(id) {
+        this.$http.post(this.baseurl + id + '/photos', {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
+          .then((response)=> {
+            this.user = response.data;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status >= 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
       resetValues : function() {
         this.email = "";
         this.password = "";
@@ -339,6 +382,9 @@
         this.name = "";
         this.city = "";
         this.country = "";
+      },
+      isLoggedin : function() {
+        return localStorage.getItem("X-Authorization") != null;
       }
     }
   }

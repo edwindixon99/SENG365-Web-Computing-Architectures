@@ -46,11 +46,21 @@
             <td style="padding:10px">{{petition.closingDate}}</td>
           </tr>
           <br /><br />
+          <br /><br />
+          <tr>
+            <td style="padding:10px"></td>
+            <button type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#signaturesModal">
+              Show Signatories
+            </button>
+          </tr>
+          <br /><br />
 
 
         </table>
 
-        <div>
+
+
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#deletepetitionModal">
             Delete
@@ -60,15 +70,14 @@
                   data-target="#editpetitionModal">
             Edit
           </button>
-        </div>
+
         <div>
 
           <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="signPetition($route.params.id)">
             Sign
           </button>
-
-
         </div>
+
       </div>
       <div class="modal fade" id="deletepetitionModal" tabindex="-1" role="dialog"
            aria-labelledby="deletepetitionModalLabel" aria-hidden="true">
@@ -150,6 +159,8 @@
       </div>
     </div>
 
+
+
     <div class="modal fade" id="signaturesModal" tabindex="-1" role="dialog"
          aria-labelledby="signaturesModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -192,7 +203,11 @@
 </template>
 
 <script>
+  import User from "./Users.vue"
   export default {
+    components: {
+      User
+    },
     data (){
       return{
         error: "",
