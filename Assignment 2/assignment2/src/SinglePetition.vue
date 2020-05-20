@@ -27,11 +27,6 @@
           </tr>
           <br /><br />
           <tr>
-            <td style="padding:10px"> Number of signatures </td>
-            <td style="padding:10px">{{petition.signatureCount}}</td>
-          </tr>
-          <br /><br />
-          <tr>
             <td style="padding:10px"> Category </td>
             <td style="padding:10px">{{petition.category}}</td>
           </tr>
@@ -59,8 +54,16 @@
 
         </table>
 
-
-
+        <div v-if="isLoggedin()">
+        <div>
+          <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="signPetition($route.params.id)">
+            Sign
+          </button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="unsignPetition($route.params.id)">
+            Unsign
+          </button>
+        </div>
+        <div v-if="isLoggedAuthor()">
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#deletepetitionModal">
             Delete
@@ -70,13 +73,9 @@
                   data-target="#editpetitionModal">
             Edit
           </button>
-
-        <div>
-
-          <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="signPetition($route.params.id)">
-            Sign
-          </button>
         </div>
+      </div>
+
 
       </div>
       <div class="modal fade" id="deletepetitionModal" tabindex="-1" role="dialog"
@@ -172,20 +171,25 @@
             </button>
           </div>
           <div class="modal-body">
-            <table>
 
+            <table >
               <tr>
-                <td style="padding:10px">Title</td>
-                <td style="padding:10px">Tile</td>
-              </tr>
-
-              <tr v-for="signator in signatories">
-                <td style="padding:10px">{{signator}}</td>
                 <td style="padding:10px"></td>
+                <td style="padding:10px">Name</td>
+                <td style="padding:10px">City</td>
+                <td style="padding:10px">Country</td>
               </tr>
-              <br /><br />
-
+              <tr style="padding:10px" v-for="signer in signatories">
+                <td style="padding:10px"> <img src="./assets/logo.png" width="100" height="100"></td>
+                <td style="padding:10px">{{ signer.name }}</td>
+                <td v-if="signer.city != null" style="padding:10px">{{signer.city }}</td>
+                <td v-else style="padding:10px"></td>
+                <td v-if="signer.country != null" style="padding:10px">{{ signer.country }}</td>
+                <td v-else style="padding:10px"></td>
+              </tr>
             </table>
+
+
           </div>
           <div class="modal-footer">
 
@@ -247,6 +251,7 @@
         this.$http.get(this.baseurl + id)
           .then((response)=> {
             this.petition = response.data;
+            this.authorId = response.data.authorId;
           }).catch((error) => {
           console.log(error.response.status);
           if (error.response.status == 401 || error.response.status == 400) {
@@ -300,7 +305,7 @@
       },
 
       signPetition: function(id) {
-        this.$http.post(this.baseurl + id + "/signatures", {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+        this.$http.post(this.baseurl + id + "/signatures", {},{headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
           this.getSinglePetition(id);}).catch((error) => {
           if (error.response.status >= 400) {
             alert(error);
@@ -319,6 +324,12 @@
           this.error = error;
           this.errorFlag = true;
         });
+      },
+      isLoggedin : function() {
+        return localStorage.getItem("X-Authorization") != null;
+      },
+      isLoggedAuthor : function() {
+        return localStorage.getItem("userId") ==  this.authorId;
       }
     }
   }

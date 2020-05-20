@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import Home from './Home.vue';
 import Users from './Users.vue';
+import User from './SingleUser.vue';
 import Petitions from './Petitions.vue';
 import SinglePetition from './SinglePetition.vue';
 import axios from 'axios';
@@ -13,18 +14,18 @@ Vue.use(VueRouter);
 
 
 const routes = [
-  {
-    path: "/",
-    component: Home
-  },
+  // {
+  //   path: "/",
+  //   component: Home
+  // },
   {
     path: "/users/:userId",
     name: "user",
-    component: Users
+    component: User
   },
 
   {
-    path: "/users",
+    path: "/",
     name: "login",
     component: Users
   },

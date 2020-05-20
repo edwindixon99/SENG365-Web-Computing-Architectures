@@ -10,12 +10,23 @@
 
     <div>
       <br id="petitions">
-      <p>{{authorId}}</p>
         <h1>Petitions</h1>
 
-      <h1>{{authorId}}</h1>
+      <div v-if="isLoggedin()">
+        <td>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                  v-on:click="setAuthorId(); startIndex=0; getPetitions();">
+            My Petitions
+          </button>
+        </td>
+      </div>
+      <div style="padding:10px"></div>
+      <button type="button" class="btn btn-secondary" data-dismiss="modal"
+              v-on:click="authorId=null; getPetitions();">
+        All Petitions
+      </button>
 
-        <div style="padding:70px">
+        <div style="padding:40px">
           <form>
             <input v-model=q placeholder="Search" />
             <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -43,7 +54,6 @@
               <option value="''">None</option>
               <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
             </select>
-
 
           </div>
           <td style="padding:10px" v-for="i in parseInt(petitionLength / 10) + 1">
@@ -161,10 +171,10 @@
                     <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
                   </select></td>
               </tr>
-              <tr style="padding:10px">
-                <td style="padding:10px" >Author Id</td>
-                <td style="padding: 10px" > <form><input Title v-model=authorId placeholder="" /></form></td>
-              </tr>
+<!--              <tr style="padding:10px">-->
+<!--                <td style="padding:10px" >Author Id</td>-->
+<!--                <td style="padding: 10px" > <form><input Title v-model=authorId placeholder="" /></form></td>-->
+<!--              </tr>-->
               <tr style="padding:10px">
               </tr>
             </table>
@@ -189,9 +199,10 @@
 </template>
 
 <script>
+
   export default {
-    data (){
-      return{
+    data() {
+      return {
         error: "",
         errorFlag: false,
         petitions: [],
@@ -207,17 +218,17 @@
         sortBy: null,
         q: null,
         startIndex: 0,
-        params:{"count":10},
+        params: {"count": 10},
         baseurl: "http://localhost:4941/api/v1/petitions"
       }
     },
-    mounted: function() {
+    mounted: function () {
       this.getPetitions(this.params);
     },
     methods: {
-      getCategories: function() {
+      getCategories: function () {
         this.$http.get(this.baseurl + "/categories")
-          .then((response)=> {
+          .then((response) => {
             this.categories = response.data;
           }).catch((error) => {
           console.log(error.response.status);
@@ -228,27 +239,24 @@
           this.errorFlag = true;
         })
       },
-      getPetitions: function(params) {
-        console.log(this.authorId);
+      getPetitions: function () {
+        // console.log(authorId);
         this.getCategories();
         if (this.q == "") {
           this.q = null;
         }
-        if (this.authorId == "") {
-          this.authorId = null;
-        }
         if (this.categoryId == "''") {
           delete this.params["categoryId"];
-        } else{
+        } else {
           this.params["categoryId"] = this.categoryId;
         }
         this.params["q"] = this.q;
         this.params["startIndex"] = this.startIndex;
-        // this.params["authorId"] = this.authorId;
+        this.params["authorId"] = this.authorId;
         this.params["sortBy"] = this.sortBy;
         this.params["count"] = 10;
-        this.$http.get(this.baseurl, {params:this.params})
-          .then((response)=> {
+        this.$http.get(this.baseurl, {params: this.params})
+          .then((response) => {
             this.petitions = response.data;
             this.getLengthPetitions();
             console.log(this.petitions.length);
@@ -264,12 +272,12 @@
           this.errorFlag = true;
         })
       },
-      getLengthPetitions: function() {
+      getLengthPetitions: function () {
         let newparam = this.params;
         delete newparam["count"];
         delete newparam["startIndex"];
-        this.$http.get(this.baseurl, {params:newparam})
-          .then((response)=> {
+        this.$http.get(this.baseurl, {params: newparam})
+          .then((response) => {
             this.petitionLength = response.data.length;
             console.log(this.petitions.length);
             console.log(this.petitionLength);
@@ -285,21 +293,7 @@
         })
       },
 
-      // getPaginatedPetitions: function() {
-      //   let pageParams = this.params;
-      //   pageParams["startIndex"] = this.startIndex;
-      //   this.$http.get(this.baseurl, {params:pageParams})
-      //     .then((response)=> {
-      //       this.paginatedPetitions = response.data;
-      //     }).catch((error) => {
-      //     if (error.response.status == 400) {
-      //       alert(error);
-      //     }
-      //     this.error = error;
-      //     this.errorFlag = true;
-      //   })
-      // },
-      addPetition: function() {
+      addPetition: function () {
         let data = {
           "title": this.title,
           "description": this.description,
@@ -308,21 +302,27 @@
         if (this.closingDate != "") {
           data["closingDate"] = this.closingDate;
         }
-          this.$http.post(this.baseurl, data, {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
-              this.petitionId = response.data.petitionId;
-          }).catch((error) => {
-            console.log(error.response.status);
-            if (error.response.status == 401 || error.response.status == 400) {
-              alert(error);
-            }
-            this.error = error;
-            this.errorFlag = true;
+        this.$http.post(this.baseurl, data, {headers: {"X-Authorization": localStorage.getItem("X-Authorization")}}).then((response) => {
+          this.petitionId = response.data.petitionId;
+        }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status == 401 || error.response.status == 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
         });
         this.title = null;
         this.description = null;
         this.categoryId = null;
-        this.closingDate  = "";
+        this.closingDate = "";
         this.getPetitions();
+      },
+      setAuthorId: function () {
+        this.authorId = localStorage.getItem("userId")
+      },
+      isLoggedin : function() {
+        return localStorage.getItem("X-Authorization") != null;
       }
     }
   }
