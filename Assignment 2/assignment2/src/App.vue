@@ -19,7 +19,6 @@
   </div>
 </template>
 <script>
-  import Petitions from "./Petitions.vue";
   export default {
     data() {
       return {

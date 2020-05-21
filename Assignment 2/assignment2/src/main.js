@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
-import Home from './Home.vue';
+// import Home from './Home.vue';
 import Users from './Users.vue';
-import User from './SingleUser.vue';
+// import User from './SingleUser.vue';
 import Petitions from './Petitions.vue';
 import SinglePetition from './SinglePetition.vue';
 import axios from 'axios';
@@ -18,11 +18,11 @@ const routes = [
   //   path: "/",
   //   component: Home
   // },
-  {
-    path: "/users/:userId",
-    name: "user",
-    component: User
-  },
+  // {
+  //   path: "/users/:userId",
+  //   name: "user",
+  //   component: User
+  // },
 
   {
     path: "/",

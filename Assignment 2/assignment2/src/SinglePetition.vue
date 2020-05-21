@@ -63,7 +63,7 @@
             Unsign
           </button>
         </div>
-        <div v-if="isLoggedAuthor()">
+<!--        <div v-if="isLoggedAuthor()">-->
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#deletepetitionModal">
             Delete
@@ -74,7 +74,7 @@
             Edit
           </button>
         </div>
-      </div>
+<!--      </div>-->
 
 
       </div>
@@ -139,12 +139,18 @@
                   <td style="padding:10px" ><form ><input style="padding:10px" v-model=closingDate placeholder="" /></form></td>
                 </tr>
 
+                <tr style="padding:10px">
+                  <td style="padding:10px">Upload an image</td>
+                  <input @change="processPhoto($event)" type="file" id="myFile" name="filename">
+                </tr>
+
               </table>
 
 
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal"
+
                       v-on:click="editPetition($route.params.id)">
                 Ok
               </button>
@@ -225,6 +231,8 @@
         closingDate: "",
         petitionId: null,
         authorId: null,
+        petitionPhoto: null,
+        uploadingPhoto:null,
         baseurl: "http://localhost:4941/api/v1/petitions/"
       }
     },
@@ -232,6 +240,36 @@
       this.getSinglePetition(this.$route.params.id);
     },
     methods: {
+      processPhoto: function(event) {
+        this.uploadingPhoto = event.target.files[0];
+      },
+      getPetitionPhoto: function(id) {
+        this.$http.get(this.baseurl + id + "/photo")
+          .then((response)=> {
+            this.petitionPhoto = response.data;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status >= 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
+
+      putPetitionPhoto: function(id) {
+        this.$http.put(this.baseurl + id + "/photo", {},{headers:{"X-Authorization":localStorage.getItem("X-Authorization")}})
+          .then((response)=> {
+            this.petitionPhoto = response.data;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status >= 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
 
       getSignatories: function(id) {
         this.$http.get(this.baseurl + id + "/signatures")
@@ -276,6 +314,9 @@
         }
         if (this.closingDate != "") {
           data["closingDate"] = this.closingDate;
+        }
+        if (this.uploadingPhoto != null) {
+          this.putPetitionPhoto(id);
         }
         this.$http.patch(this.baseurl + id, data, {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
           this.getSinglePetition(id);
