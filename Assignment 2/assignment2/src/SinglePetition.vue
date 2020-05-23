@@ -6,11 +6,10 @@
 
     <div v-if="$route.params.id">
       <div id="petition">
-        <router-link :to="{ name: 'petitions'}">Back to Petitions</router-link>
-
+        <div v-if="isPetitionPhoto"><img :src="imageElement" width="150" height="150"/> </div>
         <br /><br />
-
         <table>
+
           <tr>
             <td style="padding:10px">Title</td>
             <td style="padding:10px">{{petition.title}}</td>
@@ -29,6 +28,28 @@
           <tr>
             <td style="padding:10px"> Category </td>
             <td style="padding:10px">{{petition.category}}</td>
+          </tr>
+          <br /><br />
+          <tr>
+            <td style="padding:10px"></td>
+          </tr>
+          <tr>
+<!--            <td v-if="isUserPhoto"><img :src="imageElement" width="100" height="100"/></td>-->
+<!--            <td v-else ><img src="./assets/default.png" width="100" height="100"/></td>-->
+            <td><img src="./assets/default.png" width="100" height="100"/></td>
+            <td style="padding:10px">{{ petition.authorName }}</td>
+
+
+          </tr>
+          <tr>
+            <td v-if="petition.authorCity != null" style="padding:10px">Author City</td>
+            <td v-else style="padding:10px">No Author City</td>
+            <td style="padding:10px">{{ petition.authorCity }}</td>
+          </tr>
+          <tr>
+            <td v-if="petition.authorCountry != null" style="padding:10px">Author Country</td>
+            <td v-else style="padding:10px">No Author Country</td>
+            <td style="padding:10px">{{ petition.authorCountry }}</td>
           </tr>
           <br /><br />
           <tr>
@@ -55,15 +76,8 @@
         </table>
 
         <div v-if="isLoggedin()">
-        <div>
-          <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="signPetition($route.params.id)">
-            Sign
-          </button>
-          <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="unsignPetition($route.params.id)">
-            Unsign
-          </button>
-        </div>
-<!--        <div v-if="isLoggedAuthor()">-->
+        <div v-if="isLoggedAuthor()">
+
           <button type="button" class="btn btn-primary" data-toggle="modal"
                   data-target="#deletepetitionModal">
             Delete
@@ -73,8 +87,39 @@
                   data-target="#editpetitionModal">
             Edit
           </button>
+
+        </div>
+
+          <div v-else>
+            <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="signPetition($route.params.id)">
+              Sign
+            </button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" v-on:click="unsignPetition($route.params.id)">
+              Unsign
+            </button>
+
+          </div>
         </div>
 <!--      </div>-->
+        <br /><br />
+       <ShareNetwork
+          network="facebook"
+          :url=shareUrl
+          :quote=sharetext
+        > <button >Share on Facebook</button></ShareNetwork>
+
+        <ShareNetwork
+          network="twitter"
+          :title="sharetext"
+        > <button >Share on Twitter</button></ShareNetwork>
+
+        <ShareNetwork
+          network="whatsApp"
+          :url=shareUrl
+          :title="sharetext"
+        > <button >Share on Whatsapp</button></ShareNetwork>
+
+        <br /><br />
 
 
       </div>
@@ -124,24 +169,26 @@
 
                 <tr style="padding:10px">
                   <td style="padding:10px">Enter new Description</td>
-                  <td style="padding:10px" ><form ><input style="padding:10px" v-model=description placeholder="" /></form></td>
+                  <td style="padding:10px" ><form >
+                    <textarea v-model=description rows="10" cols="30"></textarea>
+                  </form></td>
                 </tr>
 
                 <tr style="padding:10px">
                   <td style="padding:10px">Choose new Category</td>
-<!--                  <td style="padding:10px" ><select v-model="categoryId">-->
-<!--                    <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>-->
-<!--                  </select></td>-->
+                  <td style="padding:10px" ><select v-model="categoryId">
+                    <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
+                  </select></td>
                 </tr>
 
                 <tr style="padding:10px">
                   <td style="padding:10px">Enter new Closing Date</td>
-                  <td style="padding:10px" ><form ><input style="padding:10px" v-model=closingDate placeholder="" /></form></td>
+                  <td style="padding:10px" ><form ><input v-model=closingDate type="datetime-local" /></form></td>
                 </tr>
 
                 <tr style="padding:10px">
                   <td style="padding:10px">Upload an image</td>
-                  <input @change="processPhoto($event)" type="file" id="myFile" name="filename">
+                  <input @change="processPhoto($event)" type="file" id="myFile" name="filename" >
                 </tr>
 
               </table>
@@ -186,6 +233,7 @@
                 <td style="padding:10px">Country</td>
               </tr>
               <tr style="padding:10px" v-for="signer in signatories">
+                <td style="padding:10px"> <img src="photo" width="100" height="100"></td>
                 <td style="padding:10px"> <img src="./assets/logo.png" width="100" height="100"></td>
                 <td style="padding:10px">{{ signer.name }}</td>
                 <td v-if="signer.city != null" style="padding:10px">{{signer.city }}</td>
@@ -231,8 +279,12 @@
         closingDate: "",
         petitionId: null,
         authorId: null,
-        petitionPhoto: null,
+        imageElement: null,
         uploadingPhoto:null,
+        categories:null,
+        isPetitionPhoto: 0,
+        shareUrl: "https://canterbury.ac.nz/petitions/" + this.$route.params.id,
+        sharetext: "Check out this petition: https://canterbury.ac.nz/petitions/" + this.$route.params.id,
         baseurl: "http://localhost:4941/api/v1/petitions/"
       }
     },
@@ -243,10 +295,10 @@
       processPhoto: function(event) {
         this.uploadingPhoto = event.target.files[0];
       },
-      getPetitionPhoto: function(id) {
-        this.$http.get(this.baseurl + id + "/photo")
+
+      putPetitionPhoto: function(id) {
+        this.$http.put(this.baseurl + id + "/photo", this.uploadingPhoto,{ headers:{"X-Authorization":localStorage.getItem("X-Authorization"), "Content-Type":this.uploadingPhoto.type}})
           .then((response)=> {
-            this.petitionPhoto = response.data;
           }).catch((error) => {
           console.log(error.response.status);
           if (error.response.status >= 400) {
@@ -257,18 +309,42 @@
         });
       },
 
-      putPetitionPhoto: function(id) {
-        this.$http.put(this.baseurl + id + "/photo", {},{headers:{"X-Authorization":localStorage.getItem("X-Authorization")}})
-          .then((response)=> {
-            this.petitionPhoto = response.data;
+
+      getPetitionPhoto: function(id) {
+        this.$http.get(this.baseurl + id + "/photo", { responseType:"blob"})
+          .then((response) => {
+            this.isPetitionPhoto = 1;
+            const reader = new FileReader();
+            reader.readAsDataURL((response.data));
+            reader.onload = function () {
+
+              const imageDataUrl = reader.result;
+              this.imageElement.setAttribute("src", imageDataUrl);
+
+            }
+          }).catch((error) => {
+          if (error.response.status == 404) {
+            this.isPetitionPhoto = 0;
+          } else {
+            this.error = error;
+            this.errorFlag = true;
+          }
+        });
+      },
+
+
+      getCategories: function () {
+        this.$http.get(this.baseurl + "categories")
+          .then((response) => {
+            this.categories = response.data;
           }).catch((error) => {
           console.log(error.response.status);
-          if (error.response.status >= 400) {
-            alert(error.response.statusText);
+          if (error.response.status == 400) {
+            alert(error);
           }
           this.error = error;
           this.errorFlag = true;
-        });
+        })
       },
 
       getSignatories: function(id) {
@@ -286,6 +362,8 @@
       },
       getSinglePetition: function(id) {
         this.getSignatories(id);
+        this.getCategories();
+        this.getPetitionPhoto(id);
         this.$http.get(this.baseurl + id)
           .then((response)=> {
             this.petition = response.data;
@@ -302,7 +380,7 @@
 
       editPetition: function(id) {
         let data = {};
-        console.log(this.categoryId);
+        // console.log(this.categoryId);
         if (this.title != "") {
           data["title"] = this.title;
         }
@@ -318,6 +396,10 @@
         if (this.uploadingPhoto != null) {
           this.putPetitionPhoto(id);
         }
+        if (Object.keys(data).length == 0 & this.uploadingPhoto != null) {
+          // this.uploadingPhoto = null;
+          return;
+        }
         this.$http.patch(this.baseurl + id, data, {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
           this.getSinglePetition(id);
         }).catch((error) => {
@@ -331,11 +413,12 @@
         this.description = "";
         this.categoryId = null;
         this.closingDate  = "";
+        // this.uploadingPhoto = null;
       },
 
       deletePetition: function(id) {
-        this.$http.delete(this.baseurl + id + "/signatures" , {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
-          this.getSinglePetition(id);
+        this.$http.delete(this.baseurl + id , {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+          this.$router.push({name:"petitions"});
         }).catch((error) => {
           if (error.response.status >= 400) {
             alert(error);

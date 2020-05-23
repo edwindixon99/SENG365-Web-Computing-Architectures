@@ -2,12 +2,14 @@ import Vue from 'vue'
 import App from './App.vue'
 // import Home from './Home.vue';
 import Users from './Users.vue';
-// import User from './SingleUser.vue';
+import User from './SingleUser.vue';
 import Petitions from './Petitions.vue';
 import SinglePetition from './SinglePetition.vue';
+import SocialSharing from 'vue-social-sharing'
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 Vue.use(VueAxios, axios);
+Vue.use(SocialSharing);
 
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
@@ -18,11 +20,11 @@ const routes = [
   //   path: "/",
   //   component: Home
   // },
-  // {
-  //   path: "/users/:userId",
-  //   name: "user",
-  //   component: User
-  // },
+  {
+    path: "/users/:userId",
+    name: "user",
+    component: User
+  },
 
   {
     path: "/",

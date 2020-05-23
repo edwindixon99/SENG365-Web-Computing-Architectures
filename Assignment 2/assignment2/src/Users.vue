@@ -75,10 +75,10 @@
                 <input v-model=country placeholder="Enter Country" />
               </form>
             </div>
-            <div>
-                <input v-bind"photo" type="file" id="img">
-                <input type="submit">
-            </div>
+            <tr style="padding:10px">
+              <td style="padding:10px">Upload an image</td>
+              <input @change="processPhoto($event)" type="file" id="myFile" name="filename" >
+            </tr>
             * required
           </div>
 
@@ -111,7 +111,7 @@
         currentPassword: "",
         city: "",
         country: "",
-        photo: null,
+        uploadingPhoto: null,
         baseurl: "http://localhost:4941/api/v1/users"
       }
     },
@@ -144,33 +144,6 @@
           alert("Please Log out before logging into another account");
         }
       },
-      // logout: function() {
-      //   this.$http.post(this.baseurl + 'logout', {}, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
-      //     .then((response)=> {
-      //       localStorage.removeItem("X-Authorization");
-      //       this.$router.push({name:"login"});
-      //     }).catch((error) => {
-      //     console.log(error.response.statusText);
-      //     if (error.response.status == 401 || error.response.status == 400) {
-      //       alert(error.response.statusText);
-      //     }
-      //     this.error = error;
-      //     this.errorFlag = true;
-      //   });
-      // },
-      // getSingleUser: function(id) {
-      //   this.$http.get(this.baseurl + id, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
-      //     .then((response)=> {
-      //       this.user = response.data;
-      //     }).catch((error) => {
-      //     console.log(error.response.status);
-      //     if (error.response.status == 401 || error.response.status == 400) {
-      //       alert(error.response.statusText);
-      //     }
-      //     this.error = error;
-      //     this.errorFlag = true;
-      //   });
-      // },
       addUser: function() {
           let data = {
           "name": this.name,
@@ -188,7 +161,11 @@
             alert("invalid registration!");
           } else {
             this.userId = response.data.userId;
+
             this.login();
+            if (this.uploadingPhoto != null) {
+              this.putUserPhoto(this.userId);
+            }
             this.resetValues();
           }
 
@@ -202,45 +179,8 @@
           });
       },
 
-      // editUser: function(id) {
-      //   let data = {};
-      //   if (this.name != "") {
-      //     data["name"] = this.name;
-      //   }
-      //   if (this.email != "") {
-      //     data["email"] = this.email;
-      //   }
-      //   if (this.password != "") {
-      //     data["password"] = this.password;
-      //   }
-      //   if (this.currentPassword != "") {
-      //     data["currentPassword"] = this.currentPassword;
-      //   }
-      //   if (this.city != "") {
-      //     data["city"] =this.city;
-      //   }
-      //   if (this.country != "") {
-      //     data["country"] = this.country;
-      //   }
-      //
-      //   this.$http.patch(this.baseurl +  + id, data,
-      //     {headers:{"X-Authorization":localStorage.getItem("X-Authorization")}})
-      //     .then((response) => {
-      //       this.resetValues();
-      //       this.getSingleUser(id);
-      //
-      //   }).catch((error) => {
-      //     console.log(error.response.status);
-      //     if (error.response.status == 401 || error.response.status == 400) {
-      //       alert(error.response.statusText);
-      //     }
-      //     this.error = error;
-      //     this.errorFlag = true;
-      //   });
-      // },
-
       getUserPhoto: function(id) {
-        this.$http.get(this.baseurl + id + '/photos', {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
+        this.$http.get(this.baseurl + id + '/photos')
           .then((response)=> {
             this.user = response.data;
           }).catch((error) => {
@@ -253,10 +193,14 @@
         });
       },
 
-      postUserPhoto: function(id) {
-        this.$http.post(this.baseurl + id + '/photos', {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
+      processPhoto: function(event) {
+        this.uploadingPhoto = event.target.files[0];
+      },
+
+      putUserPhoto: function(id) {
+        this.$http.put(this.baseurl + "/" + id + "/photo", this.uploadingPhoto,{ headers:{"X-Authorization":localStorage.getItem("X-Authorization"), "Content-Type":this.uploadingPhoto.type}})
           .then((response)=> {
-            this.user = response.data;
+            this.getUserPhoto(id);
           }).catch((error) => {
           console.log(error.response.status);
           if (error.response.status >= 400) {
@@ -273,6 +217,7 @@
         this.name = "";
         this.city = "";
         this.country = "";
+        this.uploadingPhoto == null;
       },
       isLoggedin : function() {
         return localStorage.getItem("X-Authorization") != null;

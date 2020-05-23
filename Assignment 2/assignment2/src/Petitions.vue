@@ -107,12 +107,12 @@
             <table>
               <tr>
                 <td style="padding:10px" > Title </td>
-                <td style="padding:10px" > <form><input Title v-model=title placeholder="" />
+                <td style="padding:10px" > <form><input v-model=title placeholder="" />
                 </form> </td>
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Description</td>
-                <td style="padding:10px" ><form><input Title v-model=description placeholder="" /></form></td>
+                <td style="padding:10px" ><form><textarea v-model=description rows="10" cols="30"></textarea></form></td>
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Category Id</td>
@@ -122,7 +122,7 @@
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Closing Date</td>
-                <td style="padding: 10px" > <form><input Title v-model=closingDate placeholder="" /></form></td>
+                <td style="padding: 10px" > <form><input v-model=closingDate type="datetime-local" /></form></td>
               </tr>
               <tr style="padding:10px">
               </tr>
@@ -199,7 +199,6 @@
 </template>
 
 <script>
-
   export default {
     data() {
       return {
@@ -240,7 +239,6 @@
         })
       },
       getPetitions: function () {
-        // console.log(authorId);
         this.getCategories();
         if (this.q == "") {
           this.q = null;
@@ -304,6 +302,8 @@
         }
         this.$http.post(this.baseurl, data, {headers: {"X-Authorization": localStorage.getItem("X-Authorization")}}).then((response) => {
           this.petitionId = response.data.petitionId;
+          this.getPetitions();
+          this.signPetition(response.data.petitionId);
         }).catch((error) => {
           console.log(error.response.status);
           if (error.response.status == 401 || error.response.status == 400) {
@@ -316,14 +316,23 @@
         this.description = null;
         this.categoryId = null;
         this.closingDate = "";
-        this.getPetitions();
       },
       setAuthorId: function () {
         this.authorId = localStorage.getItem("userId")
       },
       isLoggedin : function() {
         return localStorage.getItem("X-Authorization") != null;
-      }
+      },
+      signPetition: function(id) {
+        this.$http.post(this.baseurl + "/" + id + "/signatures", {},{headers:{"X-Authorization":localStorage.getItem("X-Authorization")}}).then((response)=> {
+          this.getSinglePetition(id);}).catch((error) => {
+          if (error.response.status >= 400) {
+            alert(error);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
     }
   }
 </script>
