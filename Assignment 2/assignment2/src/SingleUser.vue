@@ -11,16 +11,17 @@
         <table>
           <tr>
             <td style="padding:10px"></td>
-            <td style="padding:10px">User ID </td>
+<!--            <td style="padding:10px">User ID </td>-->
             <td style="padding:10px">Name</td>
             <td v-if="user.city != null" style="padding:10px">City</td>
             <td v-if="user.country != null" style="padding:10px">Country</td>
             <td v-if="user.email != null" style="padding:10px">Email</td>
           </tr>
           <tr>
-            <td v-if="isUserPhoto"><img :src="imageElement" width="100" height="100"/></td>
+<!--            <img :src="'http://localhost:4941/api/v1/users/' + $route.params.userId + '/photo'"/>-->
+            <td v-if="userPhoto"><img :src="'http://localhost:4941/api/v1/users/' + $route.params.userId + '/photo'" width="500" height="300"/></td>
             <td v-else ><img src="./assets/default.png" width="100" height="100"/></td>
-            <td style="padding:10px">{{ $route.params.userId }}</td>
+<!--            <td style="padding:10px">{{ $route.params.userId }}</td>-->
             <td style="padding:10px">{{ user.name }}</td>
             <td v-if="user.city != null" style="padding:10px">{{ user.city }}</td>
             <td v-if="user.country != null" style="padding:10px">{{ user.country }}</td>
@@ -122,8 +123,7 @@
         currentPassword: "",
         city: "",
         country: "",
-        photo: null,
-        isUserPhoto: 0,
+        userPhoto: 0,
         baseurl: "http://localhost:4941/api/v1/users/"
       }
     },
@@ -147,7 +147,7 @@
         });
       },
       getSingleUser: function(id) {
-        this.getUserPhoto(id);
+        this.isUserPhoto(id);
         this.$http.get(this.baseurl + id, {headers: {"X-Authorization":localStorage.getItem("X-Authorization")}})
           .then((response)=> {
             this.user = response.data;
@@ -231,25 +231,16 @@
       isLoggedin : function() {
         return localStorage.getItem("X-Authorization") != null;
       },
-      getUserPhoto: function(id) {
-        this.$http.get(this.baseurl + id + "/photo", { responseType:"blob"})
+      isUserPhoto: function(id) {
+        this.$http.get(this.baseurl + id + "/photo")
           .then((response) => {
-            this.isUserPhoto = 1;
-            const reader = new FileReader();
-            reader.readAsDataURL((response.data));
-            reader.onload = function () {
-
-              imageDataUrl = reader.result;
-              // this.imageElement= reader.result;
-              imageElement.setAttribute("src", imageDataUrl);
-            };
+            this.userPhoto = 1;
           }).catch((error) => {
-          if (error.response.status == 404) {
-            this.isUserPhoto = 0;
-          } else {
+          if (error.response.status != 404) {
             this.error = error;
             this.errorFlag = true;
           }
+          this.userPhoto = 0;
         });
       },
     }

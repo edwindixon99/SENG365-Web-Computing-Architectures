@@ -6,7 +6,8 @@
 
     <div v-if="$route.params.id">
       <div id="petition">
-        <div v-if="isPetitionPhoto"><img :src="imageElement" width="150" height="150"/> </div>
+<!--        <div v-if="isPetitionPhoto"><img :src="'http://localhost:4941/api/v1/petitions/' + $route.params.id + '/photo'"/> </div>-->
+        <img :src="'http://localhost:4941/api/v1/petitions/' + petition.petitionId + '/photo'"/>
         <br /><br />
         <table>
 
@@ -279,7 +280,7 @@
         closingDate: "",
         petitionId: null,
         authorId: null,
-        imageElement: null,
+        // imageElement: null,
         uploadingPhoto:null,
         categories:null,
         isPetitionPhoto: 0,
@@ -310,27 +311,27 @@
       },
 
 
-      getPetitionPhoto: function(id) {
-        this.$http.get(this.baseurl + id + "/photo", { responseType:"blob"})
-          .then((response) => {
-            this.isPetitionPhoto = 1;
-            const reader = new FileReader();
-            reader.readAsDataURL((response.data));
-            reader.onload = function () {
-
-              const imageDataUrl = reader.result;
-              this.imageElement.setAttribute("src", imageDataUrl);
-
-            }
-          }).catch((error) => {
-          if (error.response.status == 404) {
-            this.isPetitionPhoto = 0;
-          } else {
-            this.error = error;
-            this.errorFlag = true;
-          }
-        });
-      },
+      // getPetitionPhoto: function(id) {
+      //   this.$http.get(this.baseurl + id + "/photo", { responseType:"blob"})
+      //     .then((response) => {
+      //       this.isPetitionPhoto = 1;
+      //       const reader = new FileReader();
+      //       reader.readAsDataURL((response.data));
+      //       reader.onload = function () {
+      //
+      //         const imageDataUrl = reader.result;
+      //         this.imageElement.setAttribute("src", imageDataUrl);
+      //
+      //       }
+      //     }).catch((error) => {
+      //     if (error.response.status == 404) {
+      //       this.isPetitionPhoto = 0;
+      //     } else {
+      //       this.error = error;
+      //       this.errorFlag = true;
+      //     }
+      //   });
+      // },
 
 
       getCategories: function () {
@@ -363,7 +364,7 @@
       getSinglePetition: function(id) {
         this.getSignatories(id);
         this.getCategories();
-        this.getPetitionPhoto(id);
+        // this.getPetitionPhoto(id);
         this.$http.get(this.baseurl + id)
           .then((response)=> {
             this.petition = response.data;
