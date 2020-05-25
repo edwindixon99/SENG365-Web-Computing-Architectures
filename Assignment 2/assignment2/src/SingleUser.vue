@@ -19,9 +19,11 @@
           </tr>
           <tr>
 <!--            <img :src="'http://localhost:4941/api/v1/users/' + $route.params.userId + '/photo'"/>-->
+<!--            <td><img :src="'http://localhost:4941/api/v1/users/' + $route.params.userId + '/photo'"-->
+<!--                     onerror="this.onerror=null;javascript:this.src='http://localhost:8080/dist/default.png?e274a23e362234e96f8fa2898b0d944c';" width="200" height="200"/>-->
+<!--            </td>-->
             <td v-if="userPhoto"><img :src="'http://localhost:4941/api/v1/users/' + $route.params.userId + '/photo'" width="500" height="300"/></td>
-            <td v-else ><img src="./assets/default.png" width="100" height="100"/></td>
-<!--            <td style="padding:10px">{{ $route.params.userId }}</td>-->
+            <td v-else ><img src="./assets/petitonDefault.jpg" width="100" height="100"/></td>
             <td style="padding:10px">{{ user.name }}</td>
             <td v-if="user.city != null" style="padding:10px">{{ user.city }}</td>
             <td v-if="user.country != null" style="padding:10px">{{ user.country }}</td>

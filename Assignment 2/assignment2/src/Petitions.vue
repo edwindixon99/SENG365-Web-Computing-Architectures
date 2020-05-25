@@ -67,15 +67,23 @@
 
 
         <br><br/>
-
+      http://localhost:8080/dist/petitonDefault.jpg?23854dd2750da387c4feed42ab82afe5
         <table>
           <tr>
+            <td style="padding:10px" ></td>
             <td style="padding:10px" > Title </td>
             <td style="padding:10px" > Category </td>
             <td style="padding:10px" > Author </td>
             <td style="padding:10px" > Signature Count </td>
           </tr>
             <tr style="padding:10px" v-for="petition in petitions">
+
+              <td style="padding:10px" >
+                <img :src="'http://localhost:4941/api/v1/petitions/' + petition.petitionId + '/photo'"
+                     onerror="this.onerror=null;javascript:this.src='./assets/petitonDefault.jpg';" width="400" height="200"/>
+<!--                <img v-if=""   :src="'http://localhost:4941/api/v1/petitions/' + petition.petitionId + '/photo'" width="400" height="200"-->
+<!--                <img :src="'http://localhost:4941/api/v1/petitions/' + petition.petitionId + '/photo'" width="400" height="200"/>-->
+              </td>
             <td style="padding:10px" >{{ petition.title }}</td>
             <td style="padding:10px" >{{ petition.category }}</td>
             <td style="padding:10px" >{{ petition.authorName }}</td>
@@ -119,6 +127,10 @@
                 <td style="padding: 10px" > <select v-model="categoryId">
                   <option v-for="category in categories" :value="category.categoryId">{{category.name}}</option>
                 </select></td>
+              </tr>
+              <tr style="padding:10px">
+                <td style="padding:10px">Upload an image</td>
+                <input @change="processPhoto($event)" type="file" id="myFile" name="filename" >
               </tr>
               <tr style="padding:10px">
                 <td style="padding:10px" >Closing Date</td>
@@ -218,6 +230,7 @@
         q: null,
         startIndex: 0,
         params: {"count": 10},
+        uploadingPhoto: null,
         baseurl: "http://localhost:4941/api/v1/petitions"
       }
     },
@@ -225,6 +238,28 @@
       this.getPetitions(this.params);
     },
     methods: {
+
+      processPhoto: function(event) {
+        this.uploadingPhoto = event.target.files[0];
+      },
+
+      putPetitionPhoto: function(id) {
+        this.$http.put(this.baseurl + "/" + id + "/photo", this.uploadingPhoto,{ headers:{"X-Authorization":localStorage.getItem("X-Authorization"), "Content-Type":this.uploadingPhoto.type}})
+          .then((response)=> {
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status >= 400) {
+            alert(error.response.statusText);
+          }
+          this.error = error;
+          this.errorFlag = true;
+        });
+      },
+
+      // replaceByDefault(e) {
+      //   e.target.onerror = null;
+      //   e.target.src = "./assets/default.png"
+      // },
       getCategories: function () {
         this.$http.get(this.baseurl + "/categories")
           .then((response) => {
@@ -297,11 +332,16 @@
           "description": this.description,
           "categoryId": this.categoryId,
         };
+        if (this.uploadingPhoto == null) {
+          alert("Photo is required");
+          return;
+        }
         if (this.closingDate != "") {
           data["closingDate"] = this.closingDate;
         }
         this.$http.post(this.baseurl, data, {headers: {"X-Authorization": localStorage.getItem("X-Authorization")}}).then((response) => {
           this.petitionId = response.data.petitionId;
+          this.putPetitionPhoto();
           this.getPetitions();
           this.signPetition(response.data.petitionId);
         }).catch((error) => {
@@ -315,6 +355,7 @@
         this.title = null;
         this.description = null;
         this.categoryId = null;
+        this.uploadingPhoto = null;
         this.closingDate = "";
       },
       setAuthorId: function () {

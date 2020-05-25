@@ -117,32 +117,33 @@
     },
     methods: {
       login: async function() {
-        if (localStorage.getItem("X-Authorization") == null) {
-          await  this.$http.post(this.baseurl + '/login', {"email": this.email, "password": this.password})
-            .then((response) => {
-              if (response.status == 400) {
-                alert("invalid registration!");
-              } else {
-                this.userId = response.data.userId;
-                localStorage.setItem("X-Authorization", response.data.token);
-                localStorage.setItem("userId", response.data.userId);
-                this.email = "";
-                this.password = "";
-                console.log(response.data.userId);
-                // this.getSingleUser(response.data.userId)
-                this.$router.push({name: "user", params: {"userId": response.data.userId}});
+          if (localStorage.getItem("X-Authorization") == null) {
+            await this.$http.post(this.baseurl + '/login', {"email": this.email, "password": this.password})
+            // this.$http.post(this.baseurl + '/login', {"email": this.email, "password": this.password})
+              .then((response) => {
+                if (response.status == 400) {
+                  alert("invalid registration!");
+                } else {
+                  this.userId = response.data.userId;
+                  localStorage.setItem("X-Authorization", response.data.token);
+                  localStorage.setItem("userId", response.data.userId);
+                  this.email = "";
+                  this.password = "";
+                  console.log(response.data.userId);
+                  // this.getSingleUser(response.data.userId)
+                  this.$router.push({name: "user", params: {"userId": response.data.userId}});
+                }
+              }).catch((error) => {
+              console.log(error.response.status);
+              if (error.response.status == 401 || error.response.status == 400) {
+                alert(error.response.statusText);
               }
-            }).catch((error) => {
-            console.log(error.response.status);
-            if (error.response.status == 401 || error.response.status == 400) {
-              alert(error.response.statusText);
-            }
-            this.error = error;
-            this.errorFlag = true;
-          });
-        } else {
-          alert("Please Log out before logging into another account");
-        }
+              this.error = error;
+              this.errorFlag = true;
+            });
+          } else {
+            alert("Please Log out before logging into another account");
+          }
       },
       addUser: function() {
           let data = {
@@ -156,19 +157,20 @@
         if (this.city != "") {
           data["city"] = this.city;
         }
-          this.$http.post(this.baseurl + '/register', data).then(async (response) => {
+        this.$http.post(this.baseurl + '/register', data).then(async (response) => {
+            // this.$http.post(this.baseurl + '/register', data).then( async  (response) => {
           if (response.status == 400) {
             alert("invalid registration!");
           } else {
             this.userId = response.data.userId;
 
+            // this.login();
             await this.login();
             if (this.uploadingPhoto != null) {
               this.putUserPhoto(this.userId);
             }
             this.resetValues();
           }
-
         }).catch((error) => {
             console.log(error.response.status);
             if (error.response.status == 401 || error.response.status == 400) {

@@ -6,8 +6,8 @@
 
     <div v-if="$route.params.id">
       <div id="petition">
-<!--        <div v-if="isPetitionPhoto"><img :src="'http://localhost:4941/api/v1/petitions/' + $route.params.id + '/photo'"/> </div>-->
-        <img :src="'http://localhost:4941/api/v1/petitions/' + petition.petitionId + '/photo'"/>
+        <div v-if="isPetitionPhoto"><img :src="'http://localhost:4941/api/v1/petitions/' + $route.params.id + '/photo'" width="800" height="400"/> </div>
+<!--        <img :src="'http://localhost:4941/api/v1/petitions/' + petition.petitionId + '/photo'"/>-->
         <br /><br />
         <table>
 
@@ -35,9 +35,9 @@
             <td style="padding:10px"></td>
           </tr>
           <tr>
-<!--            <td v-if="isUserPhoto"><img :src="imageElement" width="100" height="100"/></td>-->
-<!--            <td v-else ><img src="./assets/default.png" width="100" height="100"/></td>-->
-            <td><img src="./assets/default.png" width="100" height="100"/></td>
+            <td><img :src="'http://localhost:4941/api/v1/users/' + petition.authorId + '/photo'"
+                     onerror="this.onerror=null;javascript:this.src='default.png';" width="200" height="200"/>
+            </td>
             <td style="padding:10px">{{ petition.authorName }}</td>
 
 
@@ -234,8 +234,11 @@
                 <td style="padding:10px">Country</td>
               </tr>
               <tr style="padding:10px" v-for="signer in signatories">
-                <td style="padding:10px"> <img src="photo" width="100" height="100"></td>
-                <td style="padding:10px"> <img src="./assets/logo.png" width="100" height="100"></td>
+<!--                <td v-if="isUserPhoto(signer.signatoryId)" style="padding:10px"> <img :src="'http://localhost:4941/api/v1/users/' + signer.signatoryId + '/photo'" width="100" height="100"></td>-->
+<!--                <td v-else tyle="padding:10px"> <img src="/assets/default.png" width="100" height="100"></td>-->
+<!--                <td style="padding:10px"> <img :src="'http://localhost:4941/api/v1/users/' + signer.signatoryId + '/photo'" width="100" height="100"></td>-->
+                <img :src="'http://localhost:4941/api/v1/users/' + signer.signatoryId + '/photo'"
+                     onerror="this.onerror=null;javascript:this.src='http://localhost:8080/dist/default.png?e274a23e362234e96f8fa2898b0d944c';" width="200" height="200"/>
                 <td style="padding:10px">{{ signer.name }}</td>
                 <td v-if="signer.city != null" style="padding:10px">{{signer.city }}</td>
                 <td v-else style="padding:10px"></td>
@@ -280,7 +283,7 @@
         closingDate: "",
         petitionId: null,
         authorId: null,
-        // imageElement: null,
+        authorPhoto: 0,
         uploadingPhoto:null,
         categories:null,
         isPetitionPhoto: 0,
@@ -309,29 +312,36 @@
           this.errorFlag = true;
         });
       },
+      hasPetitionPhoto: function(id) {
+        this.$http.get("http://localhost:4941/api/v1/petitions/" + id + "/photo")
+          .then((response)=> {
+            this.isPetitionPhoto = 1;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status != 404) {
+            alert(error.response.statusText);
+            this.error = error;
+            this.errorFlag = true;
+          }
+          this.isPetitionPhoto = 0;
+        });
+      },
 
-
-      // getPetitionPhoto: function(id) {
-      //   this.$http.get(this.baseurl + id + "/photo", { responseType:"blob"})
-      //     .then((response) => {
-      //       this.isPetitionPhoto = 1;
-      //       const reader = new FileReader();
-      //       reader.readAsDataURL((response.data));
-      //       reader.onload = function () {
-      //
-      //         const imageDataUrl = reader.result;
-      //         this.imageElement.setAttribute("src", imageDataUrl);
-      //
-      //       }
-      //     }).catch((error) => {
-      //     if (error.response.status == 404) {
-      //       this.isPetitionPhoto = 0;
-      //     } else {
-      //       this.error = error;
-      //       this.errorFlag = true;
-      //     }
-      //   });
-      // },
+      isUserPhoto: function(id) {
+        this.$http.get("http://localhost:4941/api/v1/users/" + id + "/photo")
+          .then((response)=> {
+            console.log("sadjsabvdjsa");
+            this.authorPhoto = 1;
+          }).catch((error) => {
+          console.log(error.response.status);
+          if (error.response.status != 404) {
+            alert(error.response.statusText);
+            this.error = error;
+            this.errorFlag = true;
+          }
+          this.authorPhoto = 0;
+        });
+      },
 
 
       getCategories: function () {
@@ -364,11 +374,12 @@
       getSinglePetition: function(id) {
         this.getSignatories(id);
         this.getCategories();
-        // this.getPetitionPhoto(id);
+        this.hasPetitionPhoto(id);
         this.$http.get(this.baseurl + id)
           .then((response)=> {
             this.petition = response.data;
             this.authorId = response.data.authorId;
+            this.isUserPhoto(this.authorId);
           }).catch((error) => {
           console.log(error.response.status);
           if (error.response.status == 401 || error.response.status == 400) {
