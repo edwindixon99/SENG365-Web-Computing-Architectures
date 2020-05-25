@@ -116,9 +116,9 @@
       }
     },
     methods: {
-      login: function() {
+      login: async function() {
         if (localStorage.getItem("X-Authorization") == null) {
-          this.$http.post(this.baseurl + '/login', {"email": this.email, "password": this.password})
+          await  this.$http.post(this.baseurl + '/login', {"email": this.email, "password": this.password})
             .then((response) => {
               if (response.status == 400) {
                 alert("invalid registration!");
@@ -156,13 +156,13 @@
         if (this.city != "") {
           data["city"] = this.city;
         }
-          this.$http.post(this.baseurl + '/register', data).then((response) => {
+          this.$http.post(this.baseurl + '/register', data).then(async (response) => {
           if (response.status == 400) {
             alert("invalid registration!");
           } else {
             this.userId = response.data.userId;
 
-            this.login();
+            await this.login();
             if (this.uploadingPhoto != null) {
               this.putUserPhoto(this.userId);
             }
